@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #4B5563; /* text-gray-600 */
 }
 
 @theme inline {
@@ -10,6 +10,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Custom colors */
+  --color-lime: #4ADE80;
+  
+  /* Text colors */
+  --color-heading: #111827; /* text-gray-900 */
+  --color-body: #4B5563;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +30,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Global text styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-heading);
 }
