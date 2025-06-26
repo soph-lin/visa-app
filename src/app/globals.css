@@ -1,21 +1,21 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
-  --foreground: #4B5563; /* text-gray-600 */
+  --foreground: #4b5563; /* text-gray-600 */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-inter: var(--font-inter);
-  
+
   /* Custom colors */
-  --color-lime: #4ADE80;
-  
+  --color-lime: #4ade80;
+
   /* Text colors */
   --color-heading: #111827; /* text-gray-900 */
-  --color-body: #4B5563;
+  --color-body: #4b5563;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,6 +32,11 @@ body {
 }
 
 /* Global text styles */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-heading);
 }

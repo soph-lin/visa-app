@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image'
 
 export default function Home() {
   return (
@@ -6,5 +6,5 @@ export default function Home() {
       <h1>Visa App</h1>
       <p>This is a visa application form</p>
     </div>
-  );
+  )
 }
