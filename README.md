@@ -3,7 +3,7 @@
 1. Clone the repository and go into the directory:
 
 ```
-https://github.com/soph-lin/visa-app
+git clone https://github.com/soph-lin/visa-app.git
 
 cd visa-app
 ```
