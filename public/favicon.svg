@@ -1,0 +1,27 @@
+<svg width="150" height="150" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker 
+      id="arrowhead" 
+      markerWidth="48" 
+      markerHeight="48" 
+      refX="24" 
+      refY="24" 
+      orient="auto" 
+      markerUnits="userSpaceOnUse">
+      <polygon 
+        points="0 0, 48 24, 0 48" 
+        fill="#4ADE80"
+      />
+    </marker>
+  </defs>
+
+  <path 
+    d="M20 80 L60 120 L120 30" 
+    fill="none" 
+    stroke="#4ADE80" 
+    stroke-width="13" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    marker-end="url(#arrowhead)"
+  />
+</svg>
