@@ -34,10 +34,28 @@ In the profile.ps1 file that opens, put:
 pnpm i
 ```
 
-4. Run the development server
+4. Create projects on Supabase and Clerk and add keys to `.env` file (create one in the root directory):
+
+```
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=<...>
+SUPABASE_DIRECT_URL=<...>
+
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<...>
+CLERK_SECRET_KEY=<...>
+```
+
+5. Generate Prisma schema
+
+```
+pnpm prisma generate
+```
+
+6. Run the development server
 
 ```
 pnpm dev
 ```
 
-5. Open up your browser and go to [http://localhost:3000](http://localhost:3000) to see the website.
+7. Open up your browser and go to [http://localhost:3000](http://localhost:3000) to see the website.
