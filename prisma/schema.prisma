@@ -4,14 +4,49 @@ generator client {
 
 datasource db {
   provider  = "postgresql" 
-  url       = env("NEXT_PUBLIC_SUPABASE_URL")
-  directUrl = env("SUPABASE_DIRECT_URL")
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// User - Associated with a clerk user
 model User {
-  id              String       @id @default(cuid())
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  clerkUserId     String?      @unique
+  id                 String       @id @default(cuid())
+  clerkUserId        String?      @unique
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  email              String       @unique
+  dob                DateTime?
+  onboardingComplete Boolean      @default(false)
+  documents          Document[]
+  travelHistory      TravelHistory[]
+  workExperiences    WorkExperience[]
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  url        String
+  type       String
+  uploadedAt DateTime @default(now())
+}
+
+model TravelHistory {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  entryDate DateTime
+  exitDate  DateTime
+  country   String
+  location  String
+}
+
+model WorkExperience {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  title       String
+  company     String
+  startDate   DateTime
+  endDate     DateTime
+  description String
 }

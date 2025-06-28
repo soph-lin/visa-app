@@ -38,8 +38,8 @@ pnpm i
 
 ```
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=<...>
-SUPABASE_DIRECT_URL=<...>
+DATABASE_URL=<...>
+DIRECT_URL=<...>
 
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<...>
