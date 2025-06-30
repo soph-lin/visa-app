@@ -1,32 +1,46 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import { prisma } from './lib/database'
 
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/onboarding', '/api/webhooks/clerk'])
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/onboarding', '/api/webhooks/clerk', '/api/auth/onboarding-status'])
 
 export default clerkMiddleware(async (auth, req) => {
+  console.log('Middleware running for:', req.url)
+  
   if (!isPublicRoute(req)) {
+    console.log('Protected route, checking auth...')
     await auth.protect()
     
     // After authentication, check onboarding status
     const { userId } = await auth()
+    console.log('User ID from auth:', userId)
+    
     if (userId) {
       try {
-        // Check if user has completed onboarding in database
-        const user = await prisma.user.findUnique({
-          where: { clerkUserId: userId },
-          select: { onboardingComplete: true }
-        })
+        // Call our API endpoint to check onboarding status
+        const baseUrl = req.nextUrl.origin;
+        const response = await fetch(`${baseUrl}/api/auth/onboarding-status?userId=${userId}`);
         
-        // If user doesn't exist or hasn't completed onboarding, redirect to onboarding
-        if (!user || !user.onboardingComplete) {
-          return NextResponse.redirect(new URL('/onboarding', req.url))
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Onboarding status:', data);
+          
+          // If user doesn't exist or hasn't completed onboarding, redirect to onboarding
+          if (!data.userExists || !data.hasCompletedOnboarding) {
+            console.log('Redirecting to onboarding...');
+            return NextResponse.redirect(new URL('/onboarding', req.url));
+          }
+          
+          console.log('User has completed onboarding, allowing access');
+        } else {
+          console.error('Failed to check onboarding status:', response.status);
         }
       } catch (error) {
-        console.error('Error checking onboarding status:', error)
+        console.error('Error checking onboarding status:', error);
         // If there's an error, allow access (fail open)
       }
     }
+  } else {
+    console.log('Public route, allowing access');
   }
 })
 
