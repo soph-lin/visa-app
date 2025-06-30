@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { prisma } from './lib/database'
 
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/onboarding'])
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/onboarding', '/api/webhooks/clerk'])
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
