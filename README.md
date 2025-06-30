@@ -56,7 +56,9 @@ Install packages:
 pnpm i
 ```
 
-Create an `.env` file in the root directory and add the following Supabase and Clerk keys:
+Create an `.env` file in the root directory and add the following Supabase and Clerk keys
+
+Note to add the `&connect_timeout=300` at the end of the Supabase connection strings! This helps Prisma connect to Supabase by lengthening the wait time for connection and prevents `Can't reach database server at [server]` error message.
 
 ```
 # Supabase
