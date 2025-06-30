@@ -30,6 +30,8 @@ Now whenever you have to run a `pnpm` cmd, you can type in `pn` (or whatever ali
 
 Create projects on [Supabase](https://supabase.com/) and [Clerk](https://clerk.com)
 
+In Supabase, go to Storage in the left sidebar and create a private bucket called `user-documents`.
+
 Keep your Supabase and Clerk dashboard tabs open since we will need to do additional configuration to the local website
 
 ### Install ngrok
@@ -58,8 +60,8 @@ Create an `.env` file in the root directory and add the following Supabase and C
 
 ```
 # Supabase
-DATABASE_URL=<...>
-DIRECT_URL=<...>
+DATABASE_URL=<...>&connect_timeout=300
+DIRECT_URL=<...>&connect_timeout=300
 
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<...>
