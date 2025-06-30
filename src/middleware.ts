@@ -1,10 +1,13 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/onboarding', '/api/webhooks/clerk', '/api/auth/onboarding-status'])
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/api/webhooks/clerk', '/api/auth/onboarding-status'])
 
 export default clerkMiddleware(async (auth, req) => {
   console.log('Middleware running for:', req.url)
+  
+  // Check if user is trying to access onboarding page
+  const isOnboardingPage = req.nextUrl.pathname === '/onboarding'
   
   if (!isPublicRoute(req)) {
     console.log('Protected route, checking auth...')
@@ -24,19 +27,27 @@ export default clerkMiddleware(async (auth, req) => {
           const data = await response.json();
           console.log('Onboarding status:', data);
           
-          // If user doesn't exist or hasn't completed onboarding, redirect to onboarding
-          if (!data.userExists || !data.hasCompletedOnboarding) {
-            console.log('Redirecting to onboarding...');
-            return NextResponse.redirect(new URL('/onboarding', req.url));
+          if (isOnboardingPage) {
+            // If user is trying to access onboarding but has completed it, redirect to home
+            if (data.userExists && data.hasCompletedOnboarding) {
+              console.log('User has completed onboarding, redirecting to home...');
+              return NextResponse.redirect(new URL('/', req.url));
+            }
+          } else {
+            // If user doesn't exist or hasn't completed onboarding, redirect to onboarding
+            if (!data.userExists || !data.hasCompletedOnboarding) {
+              console.log('Redirecting to onboarding...');
+              return NextResponse.redirect(new URL('/onboarding', req.url));
+            }
+            
+            console.log('User has completed onboarding, allowing access');
           }
-          
-          console.log('User has completed onboarding, allowing access');
         } else {
           console.error('Failed to check onboarding status:', response.status);
         }
       } catch (error) {
-        console.error('Error checking onboarding status:', error);
         // If there's an error, allow access (fail open)
+        console.error('Error checking onboarding status:', error);
       }
     }
   } else {
