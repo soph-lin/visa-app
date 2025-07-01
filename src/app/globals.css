@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #4b5563; /* text-gray-600 */
+  --foreground: #023D54;
 }
 
 @theme inline {
@@ -11,11 +11,11 @@
   --font-inter: var(--font-inter);
 
   /* Custom colors */
-  --color-lime: #4ade80;
+  --color-lime: #94DEA5;
 
   /* Text colors */
-  --color-heading: #111827; /* text-gray-900 */
-  --color-body: #4b5563;
+  --color-heading: #023D54;
+  --color-body: #023D54;
 }
 
 @media (prefers-color-scheme: dark) {

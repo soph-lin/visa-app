@@ -14,8 +14,23 @@ import {
   Chip,
   CircularProgress,
   Skeleton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Alert,
 } from '@mui/material'
-import { Person, Description, FlightTakeoff } from '@mui/icons-material'
+import {
+  Person,
+  Description,
+  FlightTakeoff,
+  ExpandMore,
+} from '@mui/icons-material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { extractTextFromPDF } from '@/lib/utils/text/pdfExtractor'
@@ -29,6 +44,12 @@ const onboardingSchema = z.object({
 
 type OnboardingFormData = z.infer<typeof onboardingSchema>
 
+interface TravelEntry {
+  country: string
+  entryDate: string
+  exitDate: string
+}
+
 export default function OnboardingPage() {
   const { user, isLoaded } = useUser()
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
@@ -36,6 +57,11 @@ export default function OnboardingPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [i94File, setI94File] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isProcessingI94, setIsProcessingI94] = useState(false)
+  const [travelHistory, setTravelHistory] = useState<TravelEntry[]>([])
+  const [i94ProcessingError, setI94ProcessingError] = useState<string | null>(
+    null,
+  )
 
   const {
     control,
@@ -109,6 +135,8 @@ export default function OnboardingPage() {
 
         try {
           console.log('Processing I-94 file:', file.name)
+          setIsProcessingI94(true)
+          setI94ProcessingError(null)
 
           // Extract text from PDF
           const extractionResult = await extractTextFromPDF(file)
@@ -117,8 +145,30 @@ export default function OnboardingPage() {
           // Parse I-94 data
           const travelData = parseI94Text(extractionResult.text)
           console.log('Extracted travel data:', travelData)
+
+          // Convert to array format for the table
+          if (
+            travelData.entryDate &&
+            travelData.exitDate &&
+            travelData.country
+          ) {
+            setTravelHistory([
+              {
+                country: travelData.country,
+                entryDate: travelData.entryDate,
+                exitDate: travelData.exitDate,
+              },
+            ])
+          } else {
+            setTravelHistory([])
+          }
         } catch (error) {
           console.error('Error processing I-94 file:', error)
+          setI94ProcessingError(
+            'Error processing I-94 file. Please try again later.',
+          )
+        } finally {
+          setIsProcessingI94(false)
         }
       }
     },
@@ -564,18 +614,33 @@ export default function OnboardingPage() {
                     borderRadius: 2,
                     p: 3,
                     textAlign: 'center',
-                    cursor: 'pointer',
+                    cursor: isProcessingI94 ? 'not-allowed' : 'pointer',
                     bgcolor: i94Dropzone.isDragActive
                       ? 'action.hover'
                       : 'background.paper',
                     '&:hover': {
-                      borderColor: 'primary.main',
-                      bgcolor: 'action.hover',
+                      borderColor: isProcessingI94
+                        ? 'grey.300'
+                        : 'primary.main',
+                      bgcolor: isProcessingI94
+                        ? 'background.paper'
+                        : 'action.hover',
                     },
+                    opacity: isProcessingI94 ? 0.6 : 1,
                   }}
                 >
-                  <input {...i94Dropzone.getInputProps()} />
-                  {i94File ? (
+                  <input
+                    {...i94Dropzone.getInputProps()}
+                    disabled={isProcessingI94}
+                  />
+                  {isProcessingI94 ? (
+                    <Box>
+                      <CircularProgress size={48} sx={{ mb: 2 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Processing I-94 form...
+                      </Typography>
+                    </Box>
+                  ) : i94File ? (
                     <Box>
                       <FlightTakeoff
                         sx={{ fontSize: 48, color: 'primary.main', mb: 2 }}
@@ -602,6 +667,65 @@ export default function OnboardingPage() {
                     </Box>
                   )}
                 </Box>
+
+                {/* Error message */}
+                {i94ProcessingError && (
+                  <Alert severity="error" sx={{ mt: 2 }}>
+                    {i94ProcessingError}
+                  </Alert>
+                )}
+
+                {/* Travel History Section */}
+                {travelHistory.length > 0 && (
+                  <Box sx={{ mt: 3 }}>
+                    <Accordion>
+                      <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        sx={{
+                          '&:hover': {
+                            bgcolor: 'action.hover',
+                          },
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <FlightTakeoff sx={{ fontSize: 20 }} />
+                          Travel History
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <TableContainer>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold' }}>
+                                  Country
+                                </TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>
+                                  Entry Date
+                                </TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>
+                                  Exit Date
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {travelHistory.map((entry, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>{entry.country}</TableCell>
+                                  <TableCell>{entry.entryDate}</TableCell>
+                                  <TableCell>{entry.exitDate}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </AccordionDetails>
+                    </Accordion>
+                  </Box>
+                )}
               </Box>
 
               <Box>
