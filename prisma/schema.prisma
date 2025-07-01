@@ -39,7 +39,6 @@ model TravelHistory {
   entryDate DateTime
   exitDate  DateTime
   country   String
-  location  String
 }
 
 model WorkExperience {
