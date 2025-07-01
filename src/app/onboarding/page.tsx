@@ -30,6 +30,7 @@ type OnboardingFormData = z.infer<typeof onboardingSchema>
 export default function OnboardingPage() {
   const { user, isLoaded } = useUser()
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
+  const [passportFile, setPassportFile] = useState<File | null>(null)
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [i94File, setI94File] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,6 +72,19 @@ export default function OnboardingPage() {
     },
   })
 
+  const passportDropzone = useDropzone({
+    accept: {
+      'application/pdf': ['.pdf'],
+      'image/*': ['.png', '.jpg', '.jpeg'],
+    },
+    maxFiles: 1,
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        setPassportFile(acceptedFiles[0])
+      }
+    },
+  })
+
   const resumeDropzone = useDropzone({
     accept: { 'application/pdf': ['.pdf'] },
     maxFiles: 1,
@@ -84,7 +98,6 @@ export default function OnboardingPage() {
   const i94Dropzone = useDropzone({
     accept: {
       'application/pdf': ['.pdf'],
-      'image/*': ['.png', '.jpg', '.jpeg'],
     },
     maxFiles: 1,
     onDrop: (acceptedFiles) => {
@@ -99,6 +112,7 @@ export default function OnboardingPage() {
     try {
       console.log('Form data:', data)
       console.log('Profile photo:', profilePhoto)
+      console.log('Passport file:', passportFile)
       console.log('Resume file:', resumeFile)
       console.log('I-94 file:', i94File)
 
@@ -163,12 +177,39 @@ export default function OnboardingPage() {
                 />
               </Box>
 
+              {/* Passport Upload Skeleton */}
+              <Box>
+                <Skeleton
+                  variant="text"
+                  width="20%"
+                  height={32}
+                  sx={{ mb: 1 }}
+                />
+                <Skeleton
+                  variant="text"
+                  width="40%"
+                  height={16}
+                  sx={{ mb: 1 }}
+                />
+                <Skeleton
+                  variant="rectangular"
+                  height={120}
+                  sx={{ borderRadius: 2 }}
+                />
+              </Box>
+
               {/* Resume Upload Skeleton */}
               <Box>
                 <Skeleton
                   variant="text"
                   width="25%"
                   height={32}
+                  sx={{ mb: 1 }}
+                />
+                <Skeleton
+                  variant="text"
+                  width="30%"
+                  height={16}
                   sx={{ mb: 1 }}
                 />
                 <Skeleton
@@ -184,6 +225,12 @@ export default function OnboardingPage() {
                   variant="text"
                   width="35%"
                   height={32}
+                  sx={{ mb: 1 }}
+                />
+                <Skeleton
+                  variant="text"
+                  width="40%"
+                  height={16}
                   sx={{ mb: 1 }}
                 />
                 <Skeleton
@@ -356,7 +403,75 @@ export default function OnboardingPage() {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  Resume (PDF)
+                  Passport
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Supported formats: JPG, JPEG, PNG, PDF
+                </Typography>
+                <Box
+                  {...passportDropzone.getRootProps()}
+                  sx={{
+                    border: '2px dashed',
+                    borderColor: passportDropzone.isDragActive
+                      ? 'primary.main'
+                      : 'grey.300',
+                    borderRadius: 2,
+                    p: 3,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    bgcolor: passportDropzone.isDragActive
+                      ? 'action.hover'
+                      : 'background.paper',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'action.hover',
+                    },
+                  }}
+                >
+                  <input {...passportDropzone.getInputProps()} />
+                  {passportFile ? (
+                    <Box>
+                      <Description
+                        sx={{ fontSize: 48, color: 'primary.main', mb: 2 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {passportFile.name}
+                      </Typography>
+                      <Chip
+                        label="Click to change"
+                        size="small"
+                        sx={{ mt: 1 }}
+                      />
+                    </Box>
+                  ) : (
+                    <Box>
+                      <Description
+                        sx={{ fontSize: 48, color: 'grey.400', mb: 2 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {passportDropzone.isDragActive
+                          ? 'Drop the file here'
+                          : 'Drag & drop a passport scan here, or click to select'}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Resume
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Supported formats: PDF
                 </Typography>
                 <Box
                   {...resumeDropzone.getRootProps()}
@@ -412,6 +527,13 @@ export default function OnboardingPage() {
                 <Typography variant="h6" gutterBottom>
                   I-94 Form (Optional)
                 </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Supported formats: PDF
+                </Typography>
                 <Box
                   {...i94Dropzone.getRootProps()}
                   sx={{
@@ -454,8 +576,8 @@ export default function OnboardingPage() {
                       />
                       <Typography variant="body2" color="text.secondary">
                         {i94Dropzone.isDragActive
-                          ? 'Drop the file here'
-                          : 'Drag & drop a PDF or image here, or click to select'}
+                          ? 'Drop the PDF here'
+                          : 'Drag & drop a PDF here, or click to select'}
                       </Typography>
                     </Box>
                   )}
@@ -480,6 +602,7 @@ export default function OnboardingPage() {
                       bgcolor: 'grey.300',
                       color: 'grey.500',
                     },
+                    textTransform: 'none',
                   }}
                 >
                   {isSubmitting ? (
