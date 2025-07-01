@@ -5,8 +5,6 @@ export interface I94TravelData {
 }
 
 export function parseI94Text(text: string): I94TravelData {
-  console.log('Parsing I-94 text:', text)
-  
   const result: I94TravelData = {
     entryDate: null,
     exitDate: null,
@@ -45,14 +43,11 @@ export function parseI94Text(text: string): I94TravelData {
       .replace(/No\s+\./g, 'No.')
       .replace(/https:\s*\/\s*\/\s*/g, 'https://')
       .replace(/cbp\s*\.\s*dhs\s*\.\s*gov/g, 'cbp.dhs.gov')
-    
-    console.log('Cleaned text:', cleanedText)
 
     // Extract entry date - look for "Most Recent Date of Entry"
     const entryDateMatch = cleanedText.match(/Most Recent Date of Entry:\s*(\d{4}\s+\w+\s+\d{1,2})/i)
     if (entryDateMatch) {
       const dateStr = entryDateMatch[1]
-      console.log('Found entry date string:', dateStr)
       // Convert "2015 May 2" to "2015-05-02" format
       const [year, month, day] = dateStr.split(' ')
       const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -63,7 +58,6 @@ export function parseI94Text(text: string): I94TravelData {
         const date = new Date(Date.UTC(parseInt(year), monthIndex, parseInt(day)))
         if (!isNaN(date.getTime())) {
           result.entryDate = date.toISOString().split('T')[0]
-          console.log('Parsed entry date:', result.entryDate)
         }
       }
     }
@@ -73,7 +67,6 @@ export function parseI94Text(text: string): I94TravelData {
                          cleanedText.match(/Admit\s+Until\s+Date:\s*(\d{5}\/\d{4})/i) // Handle "07131/2017" format
     if (exitDateMatch) {
       const dateStr = exitDateMatch[1]
-      console.log('Found exit date string:', dateStr)
       
       // Handle different date formats
       if (dateStr.includes('/')) {
@@ -84,21 +77,17 @@ export function parseI94Text(text: string): I94TravelData {
           const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
           if (!isNaN(date.getTime())) {
             result.exitDate = date.toISOString().split('T')[0]
-            console.log('Parsed exit date:', result.exitDate)
           }
         } else if (parts.length === 2 && parts[0].length === 5) {
           // Handle "07131/2017" format - this looks like "07/31/2017" with missing slash
           // The pattern is MMxDDxYYYY where x is any character
-          const month = parts[0].substring(0, 2) // "07"
-          const day = parts[0].substring(2, 4) // "31" 
-          const year = parts[1] // "2017"
-          
-          console.log('Parsing date parts:', { month, day, year })
+          const month = parts[0].substring(0, 2)
+          const day = parts[0].substring(2, 4)
+          const year = parts[1]
           
           const date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)))
           if (!isNaN(date.getTime())) {
             result.exitDate = date.toISOString().split('T')[0]
-            console.log('Parsed exit date:', result.exitDate)
           }
         }
       }
@@ -108,12 +97,8 @@ export function parseI94Text(text: string): I94TravelData {
     const countryMatch = cleanedText.match(/Country of Issuance:\s*([A-Za-z]+)/i)
     if (countryMatch) {
       result.country = countryMatch[1].trim()
-      console.log('Found country:', result.country)
     }
 
-
-
-    console.log('Parsed I-94 data:', result)
     return result
 
   } catch (error) {
