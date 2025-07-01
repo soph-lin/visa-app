@@ -18,6 +18,8 @@ import {
 import { Person, Description, FlightTakeoff } from '@mui/icons-material'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { extractTextFromPDF } from '@/lib/utils/text/pdfExtractor'
+import { parseI94Text } from '@/lib/utils/text/i94Parser'
 
 const onboardingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -100,9 +102,24 @@ export default function OnboardingPage() {
       'application/pdf': ['.pdf'],
     },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
+    onDrop: async (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
-        setI94File(acceptedFiles[0])
+        const file = acceptedFiles[0]
+        setI94File(file)
+
+        try {
+          console.log('Processing I-94 file:', file.name)
+
+          // Extract text from PDF
+          const extractionResult = await extractTextFromPDF(file)
+          console.log('Extracted text:', extractionResult.text)
+
+          // Parse I-94 data
+          const travelData = parseI94Text(extractionResult.text)
+          console.log('Extracted travel data:', travelData)
+        } catch (error) {
+          console.error('Error processing I-94 file:', error)
+        }
       }
     },
   })

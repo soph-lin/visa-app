@@ -1,3 +1,7 @@
+## Data
+
+I-94 forms are parsed using `react-pdftotext`. However, there are spacing issues in some instances, so in future iterations it might be a good idea to pivot to OCR for more consistent parsing. Currently, only electronic I-94 forms with [this example's format](https://manoa.hawaii.edu/fsis/wp-content/uploads/sites/67/2020/12/SampleI94.pdf) are supported.
+
 ## Getting Started
 
 ### Install pnpm package manager
