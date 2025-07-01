@@ -285,6 +285,7 @@ export default function OnboardingPage() {
                         {...field}
                         fullWidth
                         label="First Name"
+                        required
                         error={!!errors.firstName}
                         helperText={errors.firstName?.message}
                         variant="outlined"
@@ -301,6 +302,7 @@ export default function OnboardingPage() {
                         {...field}
                         fullWidth
                         label="Last Name"
+                        required
                         error={!!errors.lastName}
                         helperText={errors.lastName?.message}
                         variant="outlined"
@@ -319,6 +321,7 @@ export default function OnboardingPage() {
                       {...field}
                       fullWidth
                       label="Email"
+                      required
                       error={!!errors.email}
                       helperText={errors.email?.message}
                       variant="outlined"
@@ -335,7 +338,7 @@ export default function OnboardingPage() {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  Profile Photo
+                  Profile Photo *
                 </Typography>
                 <Box
                   {...profilePhotoDropzone.getRootProps()}
@@ -403,7 +406,7 @@ export default function OnboardingPage() {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  Passport
+                  Passport *
                 </Typography>
                 <Typography
                   variant="body2"
@@ -464,7 +467,7 @@ export default function OnboardingPage() {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  Resume
+                  Resume *
                 </Typography>
                 <Typography
                   variant="body2"
@@ -525,7 +528,7 @@ export default function OnboardingPage() {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  I-94 Form (Optional)
+                  I-94 Form
                 </Typography>
                 <Typography
                   variant="body2"
