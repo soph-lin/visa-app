@@ -78,9 +78,14 @@ export default function OnboardingPage() {
     mode: 'onChange',
   })
 
+  // Custom validation that includes file uploads
+  // Profile photo is valid if either uploaded or already exists from Clerk
+  const hasValidProfilePhoto = profilePhoto || user?.imageUrl
+  const isFormValid =
+    isValid && hasValidProfilePhoto && passportFile && resumeFile
+
   useEffect(() => {
     if (user) {
-      console.log('User loaded:', user)
       // Reset form with user data when it becomes available
       reset({
         firstName: user.firstName || '',
@@ -734,7 +739,7 @@ export default function OnboardingPage() {
                   variant="contained"
                   size="large"
                   fullWidth
-                  disabled={!isValid || isSubmitting}
+                  disabled={!isFormValid || isSubmitting}
                   sx={{
                     bgcolor: '#4ADE80',
                     color: 'white',
