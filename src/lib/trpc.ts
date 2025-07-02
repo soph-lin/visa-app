@@ -1,12 +1,15 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { prisma } from './database';
 import superjson from 'superjson';
+import { auth } from '@clerk/nextjs/server';
 
 export const createTRPCContext = async (opts: { req: Request }) => {
-  // For now, we'll handle auth in the middleware
+  const { userId } = await auth();
+  
   return {
     prisma,
     req: opts.req,
+    userId,
   };
 };
 
@@ -21,12 +24,14 @@ export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 
 const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
-  // We'll implement proper auth later
-  // For now, just pass through
+  if (!ctx.userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  
   return next({
     ctx: {
       ...ctx,
-      userId: 'temp-user-id', // Placeholder
+      userId: ctx.userId,
     },
   });
 });

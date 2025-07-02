@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from './components/Header'
+import { TRPCProvider } from './providers'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -23,8 +24,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.variable} ${inter.variable} antialiased`}>
-          <Header />
-          {children}
+          <TRPCProvider>
+            <Header />
+            {children}
+          </TRPCProvider>
         </body>
       </html>
     </ClerkProvider>

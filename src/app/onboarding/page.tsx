@@ -35,6 +35,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { extractTextFromPDF } from '@/lib/utils/text/pdfExtractor'
 import { parseI94Text } from '@/lib/utils/text/i94Parser'
+import { trpc } from '@/lib/trpc/client'
+import { useRouter } from 'next/navigation'
 
 const onboardingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -52,6 +54,7 @@ interface TravelEntry {
 
 export default function OnboardingPage() {
   const { user, isLoaded } = useUser()
+  const router = useRouter()
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [passportFile, setPassportFile] = useState<File | null>(null)
   const [resumeFile, setResumeFile] = useState<File | null>(null)
@@ -62,6 +65,16 @@ export default function OnboardingPage() {
   const [i94ProcessingError, setI94ProcessingError] = useState<string | null>(
     null,
   )
+
+  const onboardingMutation = trpc.onboarding.submit.useMutation({
+    onSuccess: () => {
+      router.push('/')
+    },
+    onError: (error) => {
+      console.error('Onboarding submission error:', error)
+      alert('Failed to submit onboarding. Please try again.')
+    },
+  })
 
   const {
     control,
@@ -80,9 +93,10 @@ export default function OnboardingPage() {
 
   // Custom validation that includes file uploads
   // Profile photo is valid if either uploaded or already exists from Clerk
-  const hasValidProfilePhoto = profilePhoto || user?.imageUrl
-  const isFormValid =
-    isValid && hasValidProfilePhoto && passportFile && resumeFile
+  const hasValidProfilePhoto = !!(profilePhoto || user?.imageUrl)
+  const isFormValid = Boolean(
+    isValid && hasValidProfilePhoto && passportFile && resumeFile,
+  )
 
   useEffect(() => {
     if (user) {
@@ -179,7 +193,98 @@ export default function OnboardingPage() {
     },
   })
 
-  const onSubmit = async (data: OnboardingFormData) => {
+  const uploadFileToSupabase = async (
+    file: File,
+    documentType: string,
+  ): Promise<string> => {
+    try {
+      console.log(`Uploading ${documentType} file:`, file.name, file.size)
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', user!.id)
+      formData.append('documentType', documentType)
+
+      console.log('Sending request to /api/upload...')
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      console.log(`Upload response status: ${response.status}`)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Upload error response:', errorText)
+        throw new Error(
+          `Failed to upload ${documentType}: ${response.status} - ${errorText}`,
+        )
+      }
+
+      const result = await response.json()
+      console.log(`${documentType} upload result:`, result)
+      return result.url
+    } catch (error) {
+      console.error(`Error uploading ${documentType}:`, error)
+      throw error
+    }
+  }
+
+  const uploadProfileImageToClerk = async (file: File): Promise<string> => {
+    try {
+      console.log('Uploading profile image to Clerk:', file.name, file.size)
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', user!.id)
+
+      console.log('Sending request to /api/upload-profile-image...')
+      const response = await fetch('/api/upload-profile-image', {
+        method: 'POST',
+        body: formData,
+      })
+
+      console.log(`Profile image upload response status: ${response.status}`)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Profile image upload error response:', errorText)
+        throw new Error(
+          `Failed to upload profile image: ${response.status} - ${errorText}`,
+        )
+      }
+
+      const responseText = await response.text()
+      console.log('Profile image upload response text:', responseText)
+
+      try {
+        const result = JSON.parse(responseText)
+        console.log('Profile image upload result:', result)
+        return result.url
+      } catch (parseError) {
+        console.error(
+          'Failed to parse profile image upload response:',
+          parseError,
+        )
+        throw new Error(`Invalid response format: ${responseText}`)
+      }
+    } catch (error) {
+      console.error('Error uploading profile image:', error)
+      throw error
+    }
+  }
+
+  const onSubmit = async (data: OnboardingFormData, event?: any) => {
+    console.log('onSubmit called!')
+
+    // Prevent default form submission
+    event?.preventDefault?.()
+
+    if (!user) {
+      alert('User not found. Please try again.')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       console.log('Form data:', data)
@@ -188,7 +293,53 @@ export default function OnboardingPage() {
       console.log('Resume file:', resumeFile)
       console.log('I-94 file:', i94File)
 
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Check if required files are uploaded
+      if (!passportFile || !resumeFile) {
+        alert('Please upload both passport and resume files.')
+        return
+      }
+
+      // Upload files to Supabase and profile image to Clerk
+      console.log('Uploading files...')
+      const uploadPromises = []
+
+      if (passportFile) {
+        uploadPromises.push(uploadFileToSupabase(passportFile, 'passport'))
+      }
+      if (resumeFile) {
+        uploadPromises.push(uploadFileToSupabase(resumeFile, 'resume'))
+      }
+      if (i94File) {
+        uploadPromises.push(uploadFileToSupabase(i94File, 'i94'))
+      }
+
+      // Upload profile image to Clerk separately
+      if (profilePhoto) {
+        uploadPromises.push(uploadProfileImageToClerk(profilePhoto))
+      }
+
+      const uploadResults = await Promise.all(uploadPromises)
+      console.log('Files uploaded successfully:', uploadResults)
+
+      console.log('Calling tRPC mutation...')
+      await onboardingMutation.mutateAsync({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        profilePhoto: profilePhoto || undefined,
+        passportFile: passportFile,
+        resumeFile: resumeFile,
+        i94File: i94File || undefined,
+        travelHistory:
+          travelHistory.length > 0
+            ? {
+                entryDate: travelHistory[0].entryDate,
+                exitDate: travelHistory[0].exitDate,
+                country: travelHistory[0].country,
+              }
+            : undefined,
+      })
+      console.log('tRPC mutation completed successfully!')
     } catch (error) {
       console.error('Submission error:', error)
     } finally {
