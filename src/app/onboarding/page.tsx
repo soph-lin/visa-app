@@ -321,6 +321,13 @@ export default function OnboardingPage() {
       const uploadResults = await Promise.all(uploadPromises)
       console.log('Files uploaded successfully:', uploadResults)
 
+      // Extract URLs from upload results
+      const passportUrl = passportFile ? uploadResults[0] : undefined
+      const resumeUrl = resumeFile ? uploadResults[1] : undefined
+      const i94Url = i94File ? uploadResults[2] : undefined
+
+      console.log('Extracted URLs:', { passportUrl, resumeUrl, i94Url })
+
       console.log('Calling tRPC mutation...')
       await onboardingMutation.mutateAsync({
         firstName: data.firstName,
@@ -330,6 +337,9 @@ export default function OnboardingPage() {
         passportFile: passportFile,
         resumeFile: resumeFile,
         i94File: i94File || undefined,
+        passportUrl,
+        resumeUrl,
+        i94Url,
         travelHistory:
           travelHistory.length > 0
             ? {

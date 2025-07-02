@@ -13,6 +13,9 @@ export const onboardingRouter = createTRPCRouter({
       passportFile: z.any().optional(),
       resumeFile: z.any().optional(),
       i94File: z.any().optional(),
+      passportUrl: z.string().optional(),
+      resumeUrl: z.string().optional(),
+      i94Url: z.string().optional(),
       travelHistory: z.object({
         entryDate: z.string().optional(),
         exitDate: z.string().optional(),
@@ -64,14 +67,14 @@ export const onboardingRouter = createTRPCRouter({
         // 3. Create document records in database (files are already uploaded via API route)
         const documentData = [];
         
-        if (input.passportFile) {
-          documentData.push({ userId: user.id, url: 'passport_uploaded', type: 'passport' });
+        if (input.passportUrl) {
+          documentData.push({ userId: user.id, url: input.passportUrl, type: 'passport' });
         }
-        if (input.resumeFile) {
-          documentData.push({ userId: user.id, url: 'resume_uploaded', type: 'resume' });
+        if (input.resumeUrl) {
+          documentData.push({ userId: user.id, url: input.resumeUrl, type: 'resume' });
         }
-        if (input.i94File) {
-          documentData.push({ userId: user.id, url: 'i94_uploaded', type: 'i94' });
+        if (input.i94Url) {
+          documentData.push({ userId: user.id, url: input.i94Url, type: 'i94' });
         }
 
         if (documentData.length > 0) {
