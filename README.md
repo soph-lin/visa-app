@@ -36,7 +36,40 @@ Create projects on [Supabase](https://supabase.com/) and [Clerk](https://clerk.c
 
 In Supabase, go to Storage in the left sidebar and create a private bucket called `user-documents`.
 
-Keep your Supabase and Clerk dashboard tabs open since we will need to do additional configuration to the local website
+Go to Configuration > Policies and create 4 different custom policies:
+
+<table>
+  <thead>
+    <tr>
+      <th>Policy Name</th>
+      <th>Allowed Operation</th>
+      <th>Target Roles</th>
+      <th>Policy Definition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Users can upload their own documents</td>
+      <td>INSERT</td>
+      <td rowspan="4">authenticated</td>
+      <td rowspan="4"><code>bucket_id = 'user-documents' AND (auth.uid()::text = (storage.foldername(name))[1])</code></td>
+    </tr>
+    <tr>
+      <td>Users can view their own documents</td>
+      <td>SELECT</td>
+    </tr>
+    <tr>
+      <td>Users can update their own documents</td>
+      <td>UPDATE</td>
+    </tr>
+    <tr>
+      <td>Users can delete their own documents</td>
+      <td>DELETE</td>
+    </tr>
+  </tbody>
+</table>
+
+Keep your Supabase and Clerk dashboard tabs open since we will need to do additional configuration to the local website.
 
 ### Install ngrok
 
@@ -66,8 +99,11 @@ Note to add the `&connect_timeout=300` at the end of the Supabase connection str
 
 ```
 # Supabase
-DATABASE_URL=<...>&connect_timeout=300
-DIRECT_URL=<...>&connect_timeout=300
+DATABASE_URL=<...>&connect_timeout=300  # Found in Connect > ORMs > Prisma
+DIRECT_URL=<...>&connect_timeout=300    # Found in Connect > ORMs > Prisma
+NEXT_PUBLIC_SUPABASE_URL=<...>          # Found in Connect > App Frameworks > NextJS
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<...>     # Found in Connect > App Frameworks > NextJS
+SUPABASE_SERVICE_ROLE_KEY=<...>         # Found in Project Settings > API Keys > service_role
 
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<...>
